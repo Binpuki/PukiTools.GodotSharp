@@ -1,4 +1,4 @@
-﻿namespace GodotSharp.Utilities;
+﻿namespace PukiTools.Godot;
 
 /// <summary>
 /// Used to mark classes that should be an autoload singleton. Generates a static class so accessing it in C# is the same as accessing it in GDScript.

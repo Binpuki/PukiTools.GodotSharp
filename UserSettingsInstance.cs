@@ -25,7 +25,7 @@ public partial class UserSettingsInstance : Node
 
     public Error Load(string path = null)
     {
-        path ??= ProjectSettings.GetSetting("user_settings/save_path").AsString();
+        path ??= ProjectSettings.GetSetting("puki_tools/save_path").AsString();
         if (!FileAccess.FileExists(path))
             return Error.FileNotFound;
 
@@ -41,7 +41,7 @@ public partial class UserSettingsInstance : Node
 
     public Error Save(string path = null)
     {
-        path ??= ProjectSettings.GetSetting("user_settings/save_path").AsString();
+        path ??= ProjectSettings.GetSetting("puki_tools/save_path").AsString();
         ConfigFile configFile = _data.CreateConfigFileInstance();
 
         return configFile.Save(path);

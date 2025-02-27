@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using IFieldSymbol = Microsoft.CodeAnalysis.IFieldSymbol;
 using IPropertySymbol = Microsoft.CodeAnalysis.IPropertySymbol;
 
-namespace GodotSharp.Utilities.SourceGenerators
+namespace PukiTools.Godot.SourceGenerators
 {
     [Generator]
     public class AutoloadGenerator : ISourceGenerator

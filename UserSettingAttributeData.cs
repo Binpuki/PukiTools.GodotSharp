@@ -1,6 +1,6 @@
 using Array = Godot.Collections.Array;
 
-namespace GodotSharp.Utilities;
+namespace PukiTools.Godot;
 
 [GlobalClass] public partial class UserSettingAttributeData : RefCounted
 {

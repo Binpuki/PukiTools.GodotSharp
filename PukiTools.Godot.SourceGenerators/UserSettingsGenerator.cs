@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace GodotSharp.Utilities.SourceGenerators
+namespace PukiTools.Godot.SourceGenerators
 {
     [Generator]
     public class UserSettingsGenerator : ISourceGenerator
