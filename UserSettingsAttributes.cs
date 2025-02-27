@@ -1,4 +1,4 @@
-namespace PukiTools.Godot;
+namespace PukiTools.GodotSharp;
 
 /// <summary>
 /// An attribute to automatically populate a field with a value from a Godot project setting.

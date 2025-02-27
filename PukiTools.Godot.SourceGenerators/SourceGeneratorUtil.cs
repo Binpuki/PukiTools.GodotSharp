@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace PukiTools.Godot.SourceGenerators
+namespace PukiTools.GodotSharp.SourceGenerators
 {
     public static class SourceGeneratorUtil
     {

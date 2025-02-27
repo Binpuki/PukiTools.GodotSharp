@@ -1,4 +1,4 @@
-namespace PukiTools.Godot.SourceGenerators
+namespace PukiTools.GodotSharp.SourceGenerators
 {
     public static class GenerationConstants
     {
@@ -6,15 +6,15 @@ namespace PukiTools.Godot.SourceGenerators
 
         public const string SignalAttr = "Godot.SignalAttribute";
         
-        public const string AutoloadAttr = "PukiTools.Godot.AutoloadAttribute";
+        public const string AutoloadAttr = "PukiTools.GodotSharp.AutoloadAttribute";
         
-        public const string ProjectSettingAttr = "PukiTools.Godot.ProjectSettingAttribute";
+        public const string ProjectSettingAttr = "PukiTools.GodotSharp.ProjectSettingAttribute";
         
-        public const string UserSettingsData = "PukiTools.Godot.UserSettingsData";
+        public const string UserSettingsData = "PukiTools.GodotSharp.UserSettingsData";
         
-        public const string UserSettingsInstance = "PukiTools.Godot.UserSettingsInstance";
+        public const string UserSettingsInstance = "PukiTools.GodotSharp.UserSettingsInstance";
         
-        public const string UserSettingAttributeData = "PukiTools.Godot.UserSettingAttributeData";
+        public const string UserSettingAttributeData = "PukiTools.GodotSharp.UserSettingAttributeData";
         
         // TODO: I'm sure there are other C# keywords, put them here.
         public static string[] Keywords = { "event" };

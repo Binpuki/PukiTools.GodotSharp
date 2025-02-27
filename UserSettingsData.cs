@@ -1,4 +1,4 @@
-namespace PukiTools.Godot;
+namespace PukiTools.GodotSharp;
 
 public partial class UserSettingsData
 {

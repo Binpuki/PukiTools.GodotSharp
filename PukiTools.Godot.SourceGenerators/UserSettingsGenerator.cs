@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 
-namespace PukiTools.Godot.SourceGenerators
+namespace PukiTools.GodotSharp.SourceGenerators
 {
     [Generator]
     public class UserSettingsGenerator : ISourceGenerator
@@ -29,7 +29,7 @@ namespace PukiTools.Godot.SourceGenerators
             StringBuilder dataClass = new StringBuilder();
             dataClass.Append("using Godot;\n" +
                              "using Godot.Collections;\n" +
-                             "using GodotSharp.Utilities;\n" +
+                             "using PukiTools.GodotSharp;\n" +
                              "\n" +
                              $"namespace {settingsNameSpace};\n" +
                              "\n" +

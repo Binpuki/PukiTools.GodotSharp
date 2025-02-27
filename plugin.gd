@@ -3,11 +3,11 @@
 extends EditorPlugin
 
 var item_group : PackedStringArray = [
-	"\t<ItemGroup Label=\"PukiTools.Godot\">",
-	"\t\t<ProjectReference Include=\"addons\\PukiTools.Godot\\PukiTools.Godot.SourceGenerators\\PukiTools.Godot.SourceGenerators.csproj\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />",
-	"\t\t<EmbeddedResource Remove=\"addons\\PukiTools.Godot\\PukiTools.Godot.SourceGenerators\\**\" />",
-	"\t\t<Compile Remove=\"addons\\PukiTools.Godot\\PukiTools.Godot.SourceGenerators\\**\" />",
-	"\t\t<Compile Remove=\"addons\\PukiTools.Godot\\UserSettingsData.cs\" />",
+	"\t<ItemGroup Label=\"PukiTools.GodotSharp\">",
+	"\t\t<ProjectReference Include=\"addons\\PukiTools.GodotSharp\\PukiTools.GodotSharp.SourceGenerators\\PukiTools.GodotSharp.SourceGenerators.csproj\" OutputItemType=\"Analyzer\" ReferenceOutputAssembly=\"false\" />",
+	"\t\t<EmbeddedResource Remove=\"addons\\PukiTools.GodotSharp\\PukiTools.GodotSharp.SourceGenerators\\**\" />",
+	"\t\t<Compile Remove=\"addons\\PukiTools.GodotSharp\\PukiTools.GodotSharp.SourceGenerators\\**\" />",
+	"\t\t<Compile Remove=\"addons\\PukiTools.GodotSharp\\UserSettingsData.cs\" />",
 	"\t</ItemGroup>"
 ]
 

@@ -1,4 +1,4 @@
-namespace GodotSharp.Utilities;
+namespace PukiTools.GodotSharp;
 
 [GlobalClass, Autoload("UserSettings")]
 public partial class UserSettingsInstance : Node

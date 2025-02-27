@@ -1,4 +1,4 @@
-namespace PukiTools.Godot.SourceGenerators
+namespace PukiTools.GodotSharp.SourceGenerators
 {
     public class UserSettingsAttribute
     {
