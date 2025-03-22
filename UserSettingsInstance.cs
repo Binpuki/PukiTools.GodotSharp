@@ -10,11 +10,9 @@ public partial class UserSettingsInstance : Node
     public override void _Ready()
     {
         if (Load() != Error.Ok)
-        {
             Reset();
-            Save();
-        }
         
+        Save();
         UpdateSettings();
     }
 
