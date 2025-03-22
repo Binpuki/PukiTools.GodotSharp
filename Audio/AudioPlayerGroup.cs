@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using Godot.Collections;
 using System.Linq;
 
 namespace PukiTools.GodotSharp.Audio;
@@ -7,7 +7,7 @@ namespace PukiTools.GodotSharp.Audio;
 {
     [Export] public string Bus;
     
-    [Export] public AudioStreamPlayer[] Players = [];
+    [Export] public Array<AudioStreamPlayer> Players = [];
 
     private Dictionary<AudioStreamPlayer, bool> _shouldAutoDestroy = new();
 
@@ -16,7 +16,7 @@ namespace PukiTools.GodotSharp.Audio;
         Bus = bus;
     }
 
-    public AudioStreamPlayer Play(AudioStream stream, bool autoDestroy = true, float time = 0f)
+    public AudioStreamPlayer Play(AudioStream stream, bool autoPlay = false, bool autoDestroy = true, float time = 0f)
     {
         AudioStreamPlayer player = GetPlayer(stream);
         if (player != null)
@@ -34,21 +34,31 @@ namespace PukiTools.GodotSharp.Audio;
         MarkAutoDestroy(player, autoDestroy);
         
         AddChild(player);
-        player.Play(time);
+        if (autoPlay)
+            player.Play(time);
 
         return player;
     }
 
     public void SetPaused(bool paused)
     {
-        for (int i = 0; i < Players.Length; i++)
+        for (int i = 0; i < Players.Count; i++)
             Players[i].StreamPaused = paused;
     }
 
     public void Stop()
     {
-        for (int i = 0; i < Players.Length; i++)
+        for (int i = 0; i < Players.Count; i++)
             Players[i].Stop();
+    }
+
+    public void DestroyPlayer(AudioStreamPlayer player)
+    {
+        if (player == null)
+            return;
+
+        Players.Remove(player);
+        player.QueueFree();
     }
 
     public AudioStreamPlayer GetPlayer(AudioStream stream)
@@ -63,13 +73,13 @@ namespace PukiTools.GodotSharp.Audio;
 
     public void ChangeVolumeDb(float volumeDb)
     {
-        for (int i = 0; i < Players.Length; i++)
+        for (int i = 0; i < Players.Count; i++)
             Players[i].VolumeDb = volumeDb;
     }
 
     public void ChangeVolumeLinear(float volumeLinear)
     {
-        for (int i = 0; i < Players.Length; i++)
+        for (int i = 0; i < Players.Count; i++)
             Players[i].VolumeLinear = volumeLinear;
     }
 
