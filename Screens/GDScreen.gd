@@ -14,10 +14,10 @@ func on_resource_loaded(_path : String) -> void: ## Triggers upon loading a reso
 var _preloaded : bool = false
 
 func _ready() -> void:
-	if not needs_preloading or (needs_preloading and _preloaded):
+	if is_loaded():
 		return
 	
 	ScreenManager.SwitchScreen(scene_file_path, "default")
 
-func is_preloaded() -> bool: ## Whether this screen was preloaded first.
-	return _preloaded
+func is_loaded() -> bool: ## Whether this screen was loaded properly.
+	return not needs_preloading or (needs_preloading and _preloaded)
