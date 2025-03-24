@@ -9,6 +9,11 @@ namespace PukiTools.GodotSharp.Screens;
     /// Resources that will be loaded upon entering a loading screen.
     /// </summary>
     [Export] public ResourceLoadList ResourcesToLoad = new();
+
+    /// <summary>
+    /// Check this to make SURE things preload. Useful in the case of hitting "Play Current Scene" on a screen.  
+    /// </summary>
+    [Export] public bool NeedsPreloading = false;
     
     /// <summary>
     /// Triggers right after the scene is loaded to add resources to load.
@@ -26,7 +31,7 @@ namespace PukiTools.GodotSharp.Screens;
     /// <inheritdoc />
     public override void _Ready()
     {
-        if (_preloaded)
+        if (!NeedsPreloading || (NeedsPreloading && _preloaded))
             return;
         
         ScreenManager.SwitchScreen(GetSceneFilePath(), "default");
