@@ -224,7 +224,18 @@ public partial class ScreenManagerInstance : CanvasLayer
         ResourceLoader.LoadThreadedRequest(_screenPath);
         _startLoading = true;
         
-        CurrentScreen.QueueFree();
+        CurrentScreen?.QueueFree();
+    }
+
+    public string GetCurrentScreenDebugInfo()
+    {
+        if (CurrentScreen is CsScreen csScreen)
+            return csScreen.GetDebugInfo();
+
+        if (CurrentScreen.InheritsFrom(ApiConstants.GdScreen))
+            return CurrentScreen.Call(ApiConstants.GdScreenGetDebugInfo).ToString();
+
+        return "";
     }
 
     private void Reset()

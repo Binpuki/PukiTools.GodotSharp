@@ -19,5 +19,8 @@ func _ready() -> void:
 	
 	ScreenManager.SwitchScreen(scene_file_path, "default")
 
+func get_debug_info() -> String: ## Can be used by debug displays to get needed info for testing purposes.
+	return ""
+
 func is_loaded() -> bool: ## Whether this screen was loaded properly.
 	return not needs_preloading or (needs_preloading and _preloaded)

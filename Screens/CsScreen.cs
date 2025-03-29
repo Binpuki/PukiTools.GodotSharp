@@ -38,6 +38,11 @@ namespace PukiTools.GodotSharp.Screens;
     }
 
     /// <summary>
+    /// Can be used by debug displays to get needed info for testing purposes.
+    /// </summary>
+    public virtual string GetDebugInfo() => "";
+
+    /// <summary>
     /// Whether this screen was properly loaded.
     /// </summary>
     /// <returns>True or false</returns>
