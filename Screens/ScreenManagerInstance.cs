@@ -54,6 +54,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     {
         _tree = GetTree();
         Layer = 128;
+        ProcessMode = ProcessModeEnum.Always;
     }
 
     /// <summary>
