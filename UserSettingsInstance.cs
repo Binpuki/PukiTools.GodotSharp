@@ -61,10 +61,22 @@ public partial class UserSettingsInstance : Node
 
     /// <inheritdoc cref="UserSettingsData.GetSections"/>
     public string[] GetSections() => _data.GetSections();
+    
+    /// <inheritdoc cref="UserSettingsData.GetSubSectionsForSection"/>
+    public string[] GetSubSectionsForSection(string section) => _data.GetSubSectionsForSection(section);
+    
+    /// <inheritdoc cref="UserSettingsData.GetAllSections"/>
+    public string[] GetAllSections() => _data.GetAllSections();
 
     /// <inheritdoc cref="UserSettingsData.GetSectionKeys"/>
     public string[] GetSectionKeys(string section) => _data.GetSectionKeys(section);
+    
+    /// <inheritdoc cref="UserSettingsData.GetAllSectionKeys"/>
+    public string[] GetAllSectionKeys() => _data.GetAllSectionKeys();
 
     /// <inheritdoc cref="UserSettingsData.GetAttributesForSetting"/>
     public UserSettingAttributeData[] GetAttributesForSetting(string key) => _data.GetAttributesForSetting(key);
+    
+    /// <inheritdoc cref="UserSettingsData.GetAttributesForSection"/>
+    public UserSettingAttributeData[] GetAttributesForSection(string section) => _data.GetAttributesForSection(section);
 }

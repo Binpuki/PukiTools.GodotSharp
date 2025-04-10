@@ -134,7 +134,64 @@ namespace PukiTools.GodotSharp.SourceGenerators
                 if (!result.isClass || result.isClass && result.pathTo.Contains('.'))
                     continue;
                 
-                dataClass.Append($"\"{result.pathTo}\", ");
+                dataClass.Append($"\"{result.pathTo.Replace('.', '/')}\", ");
+            }
+
+            dataClass.Append("];\n" +
+                             "\t}\n" +
+                             "\n" +
+                             "\tpublic partial string[] GetSubSectionsForSection(string section)\n" +
+                             "\t{\n" +
+                             "\t\tswitch (section)\n" +
+                             "\t\t{\n");
+            
+            // Make GetSubSectionsForSection
+            Dictionary<string, List<string>> subSectionMap = new Dictionary<string, List<string>>();
+            foreach (var result in results)
+            {
+                if (!result.isClass || result.pathTo.Count(x => x == '.') < 1)
+                    continue;
+
+                string fullPath = result.pathTo.Replace('.', '/');
+                if (fullPath.LastIndexOf('/') == -1)
+                    continue;
+                
+                string section = fullPath.Substring(0, fullPath.LastIndexOf('/'));
+                if (!subSectionMap.ContainsKey(section))
+                    subSectionMap[section] = new List<string>();
+                
+                subSectionMap[section].Add(fullPath);
+            }
+            
+            foreach (string section in subSectionMap.Keys)
+            {
+                dataClass.Append($"\t\t\tcase \"{section}\":\n" +
+                                 "\t\t\t\treturn [");
+
+                foreach (string key in subSectionMap[section])
+                {
+                    //throw new Exception($"MARKER {key} {section}");
+                    dataClass.Append($"\"{key}\", ");   
+                }
+                
+                dataClass.Append("];\n");
+            }
+            
+            dataClass.Append("\t\t\tdefault:\n" +
+                            "\t\t\t\treturn [];\n" +
+                            "\t\t}\n\t}\n" +
+                             "\tpublic partial string[] GetAllSections()\n" +
+                             "\t{\n" +
+                             "\t\treturn [");
+            
+            // Make GetAllSections
+            for (int i = 0; i < results.Length; i++)
+            {
+                var result = results[i];
+                if (!result.isClass)
+                    continue;
+                
+                dataClass.Append($"\"{result.pathTo.Replace('.', '/')}\", ");
             }
 
             dataClass.Append("];\n" +
@@ -153,7 +210,7 @@ namespace PukiTools.GodotSharp.SourceGenerators
                     continue;
                 
                 string section = result.pathTo.Substring(0, result.pathTo.IndexOf('.'));
-                string key = result.pathTo.Substring(result.pathTo.IndexOf('.') + 1).Replace('.', '/');
+                string key = result.pathTo.Replace('.', '/');
                 if (!sectionKeyMap.ContainsKey(section))
                     sectionKeyMap[section] = new List<string>();
                 
@@ -177,6 +234,22 @@ namespace PukiTools.GodotSharp.SourceGenerators
             dataClass.Append("\t\t\tdefault:\n" +
                              "\t\t\t\treturn [];\n" +
                              "\t\t}\n\t}\n\n");
+            
+            dataClass.Append("\tpublic partial string[] GetAllSectionKeys()\n" +
+                             "\t{\n" +
+                             "\t\treturn [");
+            
+            for (int i = 0; i < results.Length; i++)
+            {
+                var result = results[i];
+                if (result.isClass)
+                    continue;
+                
+                dataClass.Append($"\"{result.pathTo.Replace('.', '/')}\", ");
+            }
+
+            dataClass.Append("];\n" +
+                             "\t}\n\n");
             
             // Make constructor
             dataClass.Append($"\tpublic {settingsData.Name}()\n" +
@@ -215,7 +288,7 @@ namespace PukiTools.GodotSharp.SourceGenerators
 
             foreach (var result in results)
             {
-                if (result.attributeData.Length == 0)
+                if (result.isClass || result.attributeData.Length == 0)
                     continue;
 
                 string key = result.pathTo.Replace('.', '/');
@@ -234,6 +307,38 @@ namespace PukiTools.GodotSharp.SourceGenerators
                 dataClass.Append("];\n");
             }
 
+            // GetAttributeForSection
+            dataClass.Append("\t\t}\n" +
+                             "\n" +
+                             "\t\treturn null;\n" +
+                             "\t}\n" +
+                             "\n" +
+                             $"\tpublic partial {GenerationConstants.UserSettingAttributeData}[] GetAttributesForSection(string section)\n" +
+                             "\t{\n" +
+                             "\t\tswitch (section)\n" +
+                             "\t\t{\n");
+            
+            foreach (var result in results)
+            {
+                if (!result.isClass || result.attributeData.Length == 0)
+                    continue;
+
+                string key = result.pathTo.Replace('.', '/');
+                dataClass.Append($"\t\t\tcase \"{key}\":\n" +
+                                 "\t\t\t\treturn [");
+                for (int i = 0; i < result.attributeData.Length; i++)
+                {
+                    UserSettingsAttribute attribute = result.attributeData[i];
+                    dataClass.Append($"new {GenerationConstants.UserSettingAttributeData}(\"{attribute.Name}\", ");
+                    for (int j = 0; j < attribute.Parameters.Length; j++)
+                        dataClass.Append($"\"{attribute.Parameters[j]}\"" + (j != attribute.Parameters.Length - 1 ? ", " : ""));
+
+                    dataClass.Append(")" + (i != result.attributeData.Length - 1 ? ", " : ""));
+                }
+                
+                dataClass.Append("];\n");
+            }
+            
             dataClass.Append("\t\t}\n" +
                              "\n" +
                              "\t\treturn null;\n" +
@@ -415,7 +520,21 @@ namespace PukiTools.GodotSharp.SourceGenerators
                                && !typeFullName.Contains("Godot.Collections.Dictionary");
                 if (isClass)
                 {
-                    results.Add((property.Name, property.Type, null, true, Array.Empty<UserSettingsAttribute>()));
+                    List<UserSettingsAttribute> sectionAttributeData = new List<UserSettingsAttribute>();
+                    ImmutableArray<AttributeData> sectionAttributes = property.Type.GetAttributes();
+                    for (int i = 0; i < sectionAttributes.Length; i++)
+                    {
+                        AttributeData attribute = sectionAttributes[i];
+                        UserSettingsAttribute attr = new UserSettingsAttribute { Name = attribute.AttributeClass.FullQualifiedNameOmitGlobal() };
+                        List<string> parameters = new List<string>();
+                        for (int j = 0; j < attribute.ConstructorArguments.Length; j++)
+                            parameters.Add(attribute.ConstructorArguments[j].Value.ToString());
+                    
+                        attr.Parameters = parameters.ToArray();
+                        sectionAttributeData.Add(attr);
+                    }
+                    
+                    results.Add((property.Name, property.Type, null, true, sectionAttributeData.ToArray()));
                     
                     var propertyResults =
                         RecursiveSearchForValidOptions(property.Type.GetMembers().ToArray());
@@ -457,7 +576,21 @@ namespace PukiTools.GodotSharp.SourceGenerators
                                !typeFullName.Contains("Godot.Collections.Dictionary");
                 if (isClass)
                 {
-                    results.Add((field.Name, field.Type, null, true, Array.Empty<UserSettingsAttribute>()));
+                    List<UserSettingsAttribute> sectionAttributeData = new List<UserSettingsAttribute>();
+                    ImmutableArray<AttributeData> sectionAttributes = field.Type.GetAttributes();
+                    for (int i = 0; i < sectionAttributes.Length; i++)
+                    {
+                        AttributeData attribute = sectionAttributes[i];
+                        UserSettingsAttribute attr = new UserSettingsAttribute { Name = attribute.AttributeClass.FullQualifiedNameOmitGlobal() };
+                        List<string> parameters = new List<string>();
+                        for (int j = 0; j < attribute.ConstructorArguments.Length; j++)
+                            parameters.Add(attribute.ConstructorArguments[j].Value.ToString());
+                    
+                        attr.Parameters = parameters.ToArray();
+                        sectionAttributeData.Add(attr);
+                    }
+                    
+                    results.Add((field.Name, field.Type, null, true, sectionAttributeData.ToArray()));
                     
                     var fieldResults =
                         RecursiveSearchForValidOptions(field.Type.GetMembers().ToArray());
