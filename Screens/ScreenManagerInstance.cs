@@ -45,7 +45,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     private bool _startLoading = false;
     private bool _screenLoaded = false;
 
-    private List<string> _preloadList = [];
+    private List<string> _preloadList;
     private int _preloadCount = 0;
 
     /// <summary>
@@ -64,14 +64,14 @@ public partial class ScreenManagerInstance : CanvasLayer
     public override void _Process(double delta)
     {
         base._Process(delta);
-
+        
         if (CurrentScreen == null)
             CurrentScreen = _tree.GetCurrentScene();
     }
 
     public void AddPath(string path)
     {
-        _preloadList.Add(path);
+        _preloadList = [.._preloadList, path];
         ResourceQueueLoader.Queue(path);
     }
     
@@ -210,18 +210,19 @@ public partial class ScreenManagerInstance : CanvasLayer
         {
             Progress = 50;
             CurrentScreen = ResourceLoader.Load<PackedScene>(path).Instantiate();
-            CallReadyPreload();
             UpdateResourcePaths();
+            CallReadyPreload();
             return;
         }
         
         if (!_preloadList.Contains(path))
             return;
-
+        
         _preloadCount++;
         Progress = 50 + Mathf.FloorToInt((float)_preloadCount / _preloadList.Count) * 50;
+        EmitSignalProgressUpdated(Progress);
         NotifyResourceLoaded(path);
-
+        
         if (_preloadCount < _preloadList.Count)
             return;
 
