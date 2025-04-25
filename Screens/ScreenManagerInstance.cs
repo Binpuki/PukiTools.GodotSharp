@@ -61,6 +61,14 @@ public partial class ScreenManagerInstance : CanvasLayer
         ResourceQueueLoader.ResourceLoaded += OnResourceLoaded;
     }
 
+    public override void _Process(double delta)
+    {
+        base._Process(delta);
+
+        if (CurrentScreen == null)
+            CurrentScreen = _tree.GetCurrentScene();
+    }
+
     public void AddPath(string path)
     {
         _preloadList.Add(path);
