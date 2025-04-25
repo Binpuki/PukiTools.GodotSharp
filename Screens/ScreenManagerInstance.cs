@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using PukiTools.GodotSharp;
 using Array = Godot.Collections.Array;
@@ -44,8 +45,8 @@ public partial class ScreenManagerInstance : CanvasLayer
     private bool _startLoading = false;
     private bool _screenLoaded = false;
 
-    private ResourceLoadList _preloadList;
-    private int _preloadIndex = 0;
+    private List<string> _preloadList = [];
+    private int _preloadCount = 0;
 
     /// <summary>
     /// Sets up the node for use.
@@ -55,122 +56,15 @@ public partial class ScreenManagerInstance : CanvasLayer
         _tree = GetTree();
         Layer = 128;
         ProcessMode = ProcessModeEnum.Always;
+
+        ResourceQueueLoader.PreloadProgressed += OnProgressUpdated;
+        ResourceQueueLoader.ResourceLoaded += OnResourceLoaded;
     }
 
-    /// <summary>
-    /// Processes loading if there's a screen queued for loading.
-    /// </summary>
-    /// <param name="delta">Time passed, in seconds</param>
-    public override void _Process(double delta)
+    public void AddPath(string path)
     {
-        base._Process(delta);
-
-        if (CurrentScreen == null)
-            CurrentScreen = _tree.CurrentScene;
-
-        if (_screenPath == null || !_startLoading)
-            return;
-
-        if (!_screenLoaded)
-        {
-            ThreadLoadStatus screenLoadStatus = ResourceLoader.LoadThreadedGetStatus(_screenPath, _progressArray);
-            if (screenLoadStatus == ThreadLoadStatus.InProgress)
-            {
-                Progress = Mathf.FloorToInt(_progressArray[0].AsSingle() * 50f);
-                EmitSignalProgressUpdated(Progress);
-                return;
-            }
-
-            if (screenLoadStatus != ThreadLoadStatus.Loaded)
-            {
-                GD.PrintErr($"[ScreenManager] Failed to load screen at path {_screenPath}. Error: {screenLoadStatus}");
-                Reset();
-                return;
-            }
-
-            _screenLoaded = true;
-            Resource screenResource = ResourceLoader.LoadThreadedGet(_screenPath);
-            if (!screenResource.IsClass("PackedScene"))
-            {
-                GD.PrintErr($"[ScreenManager] Resource at {_screenPath} is not of type PackedScene.");
-                Reset();
-                return;
-            }
-                
-            Node screen = (screenResource as PackedScene).Instantiate();
-            if (screen is null)
-            {
-                GD.PrintErr($"[ScreenManager] Resource at {_screenPath} is not of type Screen.");
-                Reset();
-                return;
-            }
-
-            CurrentScreen = screen;
-            Progress = 50;
-            EmitSignalProgressUpdated(Progress);
-            
-            // Start preloading
-            CallReadyPreload();
-            UpdateResourcePaths();
-            _preloadIndex = 0;
-            
-            if (_preloadList.Count != 0)
-                ResourceLoader.LoadThreadedRequest(_preloadList[_preloadIndex]);
-        }
-
-        // Continue processing preloading here
-        if (_preloadIndex < _preloadList.Count)
-        {
-            string currentPath = _preloadList[_preloadIndex];
-            while (!ResourceLoader.Exists(currentPath))
-            {
-                _preloadIndex++;
-
-                if (_preloadIndex >= _preloadList.Count)
-                    break;
-                
-                currentPath = _preloadList[_preloadIndex];
-            }
-            
-            ThreadLoadStatus resourceStatus = ResourceLoader.LoadThreadedGetStatus(currentPath, _progressArray);
-            int progressOffset = 50 + Mathf.FloorToInt((float)_preloadIndex / _preloadList.Count * 50f);
-            int progress = progressOffset;
-            switch (resourceStatus)
-            {
-                case ThreadLoadStatus.InvalidResource: // Not loaded yet
-                    ResourceLoader.LoadThreadedRequest(currentPath);
-                    break;
-                case ThreadLoadStatus.InProgress:
-                    progress += Mathf.FloorToInt(1f / _preloadList.Count * _progressArray[0].AsSingle() * 50f);
-                    break;
-                case ThreadLoadStatus.Loaded:
-                    NotifyResourceLoaded(currentPath);
-                    UpdateResourcePaths();
-                    _preloadIndex++;
-                    
-                    progress += Mathf.FloorToInt(1f / _preloadList.Count * _progressArray[0].AsSingle() * 50f);
-                    break;
-                default:
-                    GD.PrintErr($"[ScreenManager] Failed to load resource at path {currentPath}. Error: {resourceStatus}");
-                    _preloadIndex++;
-                    break;
-            }
-
-            Progress = progress;
-            EmitSignalProgressUpdated(Progress);
-            
-            return;
-        }
-
-        Progress = 100;
-        
-        _tree.Root.AddChild(CurrentScreen);
-        _tree.CurrentScene = CurrentScreen;
-        
-        EmitSignalProgressUpdated(Progress);
-        EmitSignalCompleted();
-        
-        Reset();
+        _preloadList.Add(path);
+        ResourceQueueLoader.Queue(path);
     }
     
     /// <summary>
@@ -189,18 +83,13 @@ public partial class ScreenManagerInstance : CanvasLayer
         Reset();
         _screenPath = path;
 
-        string tscnPath = $"res://Resources/UI/Loading/{loadingScreen}.tscn";
-        string scnPath = $"res://Resources/UI/Loading/{loadingScreen}.scn";
-        
-        bool tscnExists = ResourceLoader.Exists(tscnPath);
-        bool scnExists = ResourceLoader.Exists(scnPath);
-        if (!tscnExists && !scnExists)
+        if (loadingScreen == null)
         {
             StartLoading();
             return;
         }
         
-        PackedScene loadingScene = GD.Load<PackedScene>(tscnExists ? tscnPath : scnPath);
+        PackedScene loadingScene = GD.Load<PackedScene>(loadingScreen);
         if (loadingScene is null)
         {
             StartLoading();
@@ -222,7 +111,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     /// </summary>
     public void StartLoading()
     {
-        ResourceLoader.LoadThreadedRequest(_screenPath);
+        ResourceQueueLoader.Queue(_screenPath);
         _startLoading = true;
         
         CurrentScreen?.QueueFree();
@@ -244,7 +133,7 @@ public partial class ScreenManagerInstance : CanvasLayer
         Progress = 0;
         _screenPath = null;
         _screenLoaded = false;
-        _preloadIndex = 0;
+        _preloadCount = 0;
         _startLoading = false;
         _preloadList = [];
     }
@@ -283,7 +172,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     {
         if (CurrentScreen is CsScreen cSharpScreen)
         {
-            _preloadList = cSharpScreen.ResourcesToLoad;
+            _preloadList = cSharpScreen.ResourcesToLoad.ToList();
             return;
         }
 
@@ -291,6 +180,51 @@ public partial class ScreenManagerInstance : CanvasLayer
         if (screenScript.GetGlobalName() != "GDScreen")
             return;
 
-        _preloadList = CurrentScreen.Get("resources_to_load").As<ResourceLoadList>();
+        _preloadList = CurrentScreen.Get("resources_to_load").AsStringArray().ToList();
+    }
+
+    private void OnProgressUpdated(string path, Array progressArray)
+    {
+        if (path == _screenPath)
+        {
+            Progress = Mathf.FloorToInt(progressArray[0].AsDouble() * 50);
+            return;
+        }
+        
+        float segment = 1f / _preloadList.Count;
+        Progress = 50 + (Mathf.FloorToInt(((float)_preloadCount / _preloadList.Count) +
+                                     (segment * progressArray[0].AsDouble())) * 50);
+    }
+
+    private void OnResourceLoaded(string path)
+    {
+        if (path == _screenPath)
+        {
+            Progress = 50;
+            CurrentScreen = ResourceLoader.Load<PackedScene>(path).Instantiate();
+            CallReadyPreload();
+            UpdateResourcePaths();
+            return;
+        }
+        
+        if (!_preloadList.Contains(path))
+            return;
+
+        _preloadCount++;
+        Progress = 50 + Mathf.FloorToInt((float)_preloadCount / _preloadList.Count) * 50;
+        NotifyResourceLoaded(path);
+
+        if (_preloadCount < _preloadList.Count)
+            return;
+
+        Progress = 100;
+        
+        _tree.Root.AddChild(CurrentScreen);
+        _tree.CurrentScene = CurrentScreen;
+        
+        EmitSignalProgressUpdated(Progress);
+        EmitSignalCompleted();
+        
+        Reset();
     }
 }

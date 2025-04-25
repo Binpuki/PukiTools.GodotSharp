@@ -8,7 +8,7 @@ namespace PukiTools.GodotSharp.Screens;
     /// <summary>
     /// Resources that will be loaded upon entering a loading screen.
     /// </summary>
-    [Export] public ResourceLoadList ResourcesToLoad = new();
+    [Export] public string[] ResourcesToLoad = [];
 
     /// <summary>
     /// Check this to make SURE things preload. Useful in the case of hitting "Play Current Scene" on a screen.  
@@ -34,7 +34,7 @@ namespace PukiTools.GodotSharp.Screens;
         if (IsLoaded())
             return;
         
-        ScreenManager.SwitchScreen(GetSceneFilePath(), "default");
+        ScreenManager.SwitchScreen(GetSceneFilePath(), "res://resources/ui/loading/Default.tscn");
     }
 
     /// <summary>

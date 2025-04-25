@@ -2,7 +2,7 @@ class_name GDScreen extends Node
 
 ## A main screen class for GDScript classes.
 
-@export var resources_to_load : ResourceLoadList = ResourceLoadList.new() ## Resources that will be loaded upon entering a loading screen.
+@export var resources_to_load : Array[String] = [] ## Resources that will be loaded upon entering a loading screen.
 @export var needs_preloading : bool = false ## Check this to make SURE things preload. Useful in the case of hitting "Play Current Scene" on a screen.  
 
 func ready_preload() -> void: ## Triggers right after the scene is loaded to add resources to load.
