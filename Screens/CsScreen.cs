@@ -34,7 +34,7 @@ namespace PukiTools.GodotSharp.Screens;
         if (IsLoaded())
             return;
         
-        ScreenManager.SwitchScreen(GetSceneFilePath(), "res://resources/ui/loading/Default.tscn");
+        ScreenManager.SwitchScreen(GetSceneFilePath(), null);
     }
 
     /// <summary>

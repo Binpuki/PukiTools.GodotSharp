@@ -91,12 +91,6 @@ public partial class ScreenManagerInstance : CanvasLayer
         Reset();
         _screenPath = path;
 
-        if (loadingScreen == null)
-        {
-            StartLoading();
-            return;
-        }
-        
         PackedScene loadingScene = GD.Load<PackedScene>(loadingScreen);
         if (loadingScene is null)
         {

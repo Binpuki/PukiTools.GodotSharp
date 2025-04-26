@@ -17,7 +17,7 @@ func _ready() -> void:
 	if is_loaded():
 		return
 	
-	ScreenManager.SwitchScreen(scene_file_path, "default")
+	ScreenManager.SwitchScreen(scene_file_path, null)
 
 func get_debug_info() -> String: ## Can be used by debug displays to get needed info for testing purposes.
 	return ""
