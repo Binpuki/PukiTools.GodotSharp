@@ -100,8 +100,12 @@ public partial class ScreenManagerInstance : CanvasLayer
         PackedScene loadingScene = GD.Load<PackedScene>(loadingScreen);
         if (loadingScene is null)
         {
-            StartLoading();
-            return;
+            loadingScene = ResourceLoader.Load<PackedScene>(ProjectSettings.GetSetting("puki_tools/general/default_loading_screen").AsString());
+            if (loadingScene is null)
+            {
+                StartLoading();
+                return;
+            }
         }
 
         LoadingScreen = loadingScene.InstantiateOrNull<Node>();
