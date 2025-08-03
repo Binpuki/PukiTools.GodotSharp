@@ -212,26 +212,28 @@ public partial class ScreenManagerInstance : CanvasLayer
             CallReadyPreload();
             return;
         }
-        
+
         if (!_preloadList.Contains(path))
             return;
-        
+
         _preloadCount++;
         Progress = 50 + Mathf.FloorToInt((float)_preloadCount / _preloadList.Count) * 50;
         EmitSignalProgressUpdated(Progress);
         NotifyResourceLoaded(path);
-        
+
         if (_preloadCount < _preloadList.Count)
             return;
 
         Progress = 100;
-        
+
         _tree.Root.AddChild(CurrentScreen);
         _tree.CurrentScene = CurrentScreen;
-        
+
         EmitSignalProgressUpdated(Progress);
         EmitSignalCompleted();
-        
+
         Reset();
+
+        GetTree().Paused = false;
     }
 }
