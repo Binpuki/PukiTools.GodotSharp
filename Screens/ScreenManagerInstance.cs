@@ -16,7 +16,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     /// The current screen loaded.
     /// </summary>
     [Export] public Node CurrentScreen;
-    
+
     /// <summary>
     /// The current loading screen.
     /// </summary>
@@ -26,21 +26,21 @@ public partial class ScreenManagerInstance : CanvasLayer
     /// How much progress has been done on loading.
     /// </summary>
     [Export] public int Progress = 0;
-    
+
     /// <summary>
     /// Emits when the progress is updated.
     /// </summary>
     [Signal] public delegate void ProgressUpdatedEventHandler(int progress);
-    
+
     /// <summary>
     /// Emits when loading is complete.
     /// </summary>
     [Signal] public delegate void CompletedEventHandler();
-    
+
     private SceneTree _tree;
 
     private Array _progressArray = [];
-    
+
     private string _screenPath;
     private bool _startLoading = false;
     private bool _screenLoaded = false;
@@ -64,17 +64,17 @@ public partial class ScreenManagerInstance : CanvasLayer
     public override void _Process(double delta)
     {
         base._Process(delta);
-        
+
         if (CurrentScreen == null)
             CurrentScreen = _tree.GetCurrentScene();
     }
 
     public void AddPath(string path)
     {
-        _preloadList = [.._preloadList, path];
+        _preloadList = [.. _preloadList, path];
         ResourceQueueLoader.Queue(path);
     }
-    
+
     /// <summary>
     /// Switches the current main screen to the screen at the path provided.
     /// </summary>
@@ -87,7 +87,7 @@ public partial class ScreenManagerInstance : CanvasLayer
             GD.PrintErr($"[SceneManager] Couldn't find screen at path {path}. Aborting.");
             return;
         }
-        
+
         Reset();
         _screenPath = path;
 
@@ -108,7 +108,7 @@ public partial class ScreenManagerInstance : CanvasLayer
             StartLoading();
             return;
         }
-        
+
         AddChild(LoadingScreen);
     }
 
@@ -119,7 +119,7 @@ public partial class ScreenManagerInstance : CanvasLayer
     {
         ResourceQueueLoader.Queue(_screenPath);
         _startLoading = true;
-        
+
         CurrentScreen?.QueueFree();
     }
 
@@ -158,7 +158,7 @@ public partial class ScreenManagerInstance : CanvasLayer
 
         CurrentScreen.Call("ready_preload");
     }
-    
+
     private void NotifyResourceLoaded(string path)
     {
         if (CurrentScreen is CsScreen cSharpScreen)
@@ -196,7 +196,7 @@ public partial class ScreenManagerInstance : CanvasLayer
             Progress = Mathf.FloorToInt(progressArray[0].AsDouble() * 50);
             return;
         }
-        
+
         float segment = 1f / _preloadList.Count;
         Progress = 50 + (Mathf.FloorToInt(((float)_preloadCount / _preloadList.Count) +
                                      (segment * progressArray[0].AsDouble())) * 50);
@@ -210,6 +210,10 @@ public partial class ScreenManagerInstance : CanvasLayer
             CurrentScreen = ResourceLoader.Load<PackedScene>(path).Instantiate();
             UpdateResourcePaths();
             CallReadyPreload();
+
+            if (_preloadCount == 0)
+                CompleteLoad();
+            
             return;
         }
 
@@ -224,6 +228,11 @@ public partial class ScreenManagerInstance : CanvasLayer
         if (_preloadCount < _preloadList.Count)
             return;
 
+        CompleteLoad();
+    }
+
+    private void CompleteLoad()
+    {
         Progress = 100;
 
         _tree.Root.AddChild(CurrentScreen);
